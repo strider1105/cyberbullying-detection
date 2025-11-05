@@ -1,0 +1,10 @@
+# Minimal requirements for Python 3.13 on Windows
+tensorflow==2.20.0
+Flask
+pandas
+numpy
+scikit-learn
+nltk
+Pillow
+pytesseract
+opencv-python

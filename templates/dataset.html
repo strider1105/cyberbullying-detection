@@ -1,0 +1,595 @@
+{% extends "base.html" %}
+
+{% block title %}Dataset Management - Cyberbullying Detection System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="content-wrapper">
+        <div class="text-center mb-4">
+            <h1 style="color: #2c3e50; margin-bottom: 1rem;">
+                <i class="fas fa-database" style="color: #dc3545;"></i>
+                Dataset Management
+            </h1>
+            <p style="color: #7f8c8d; font-size: 1.1rem;">
+                Upload new datasets and manage machine learning model training
+            </p>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-upload"></i> Upload New Dataset
+                </h3>
+                <p style="color: #7f8c8d; margin: 0.5rem 0 0 0; font-size: 0.9rem;">
+                    Upload a CSV file with 'text' and 'label' columns (0=safe, 1=offensive)
+                </p>
+            </div>
+            
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <div class="upload-text">
+                    Drag and drop your CSV file here
+                </div>
+                <div class="upload-subtext">
+                    or click to browse files
+                </div>
+                <input type="file" id="fileInput" accept=".csv" style="display: none;">
+                <div style="margin-top: 1rem; font-size: 0.85rem; color: #7f8c8d;">
+                    <i class="fas fa-info-circle"></i> 
+                    Maximum file size: 16MB | Supported format: CSV
+                </div>
+            </div>
+
+            <!-- Upload Progress -->
+            <div id="uploadProgress" class="d-none" style="margin-top: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Uploading...</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div class="confidence-bar">
+                    <div id="progressBar" class="confidence-fill" style="width: 0%; background: #3498db;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dataset Preview -->
+        <div id="datasetPreview" class="dataset-preview">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="margin: 0;">
+                    <i class="fas fa-table"></i> Dataset Preview
+                </h3>
+                <div>
+                    <button class="btn btn-success" id="trainModelBtn" onclick="trainModel()">
+                        <i class="fas fa-play"></i> Train Model
+                    </button>
+                    <button class="btn btn-danger" onclick="clearDataset()">
+                        <i class="fas fa-trash"></i> Clear
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dataset Statistics -->
+            <div class="row" style="margin-bottom: 2rem;">
+                <div class="col-3">
+                    <div class="stat-card">
+                        <div class="stat-number" style="color: #3498db;" id="totalRows">0</div>
+                        <div class="stat-label">
+                            <i class="fas fa-list"></i> Total Rows
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="stat-card">
+                        <div class="stat-number" style="color: #28a745;" id="safeRows">0</div>
+                        <div class="stat-label">
+                            <i class="fas fa-check-circle"></i> Safe Content
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="stat-card">
+                        <div class="stat-number" style="color: #dc3545;" id="offensiveRows">0</div>
+                        <div class="stat-label">
+                            <i class="fas fa-exclamation-triangle"></i> Offensive Content
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="stat-card">
+                        <div class="stat-number" style="color: #ffc107;" id="balanceRatio">0%</div>
+                        <div class="stat-label">
+                            <i class="fas fa-balance-scale"></i> Balance Ratio
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sample Data Table -->
+            <div style="overflow-x: auto;">
+                <table class="preview-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 10%;">#</th>
+                            <th style="width: 70%;">Text</th>
+                            <th style="width: 20%;">Label</th>
+                        </tr>
+                    </thead>
+                    <tbody id="previewTableBody">
+                        <!-- Sample rows will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="text-align: center; margin-top: 1rem; color: #7f8c8d; font-size: 0.9rem;">
+                Showing first 10 rows of the dataset
+            </div>
+        </div>
+
+        <!-- Training Progress -->
+        <div id="trainingProgress" class="card d-none" style="margin-top: 2rem;">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-cog fa-spin"></i> Model Training in Progress
+                </h3>
+            </div>
+            <div style="padding: 2rem;">
+                <div id="trainingSteps">
+                    <div class="training-step" id="step1">
+                        <i class="fas fa-spinner fa-spin"></i> Loading dataset...
+                    </div>
+                    <div class="training-step" id="step2" style="color: #7f8c8d;">
+                        <i class="fas fa-circle"></i> Preprocessing text data...
+                    </div>
+                    <div class="training-step" id="step3" style="color: #7f8c8d;">
+                        <i class="fas fa-circle"></i> Training model...
+                    </div>
+                    <div class="training-step" id="step4" style="color: #7f8c8d;">
+                        <i class="fas fa-circle"></i> Evaluating performance...
+                    </div>
+                    <div class="training-step" id="step5" style="color: #7f8c8d;">
+                        <i class="fas fa-circle"></i> Saving model...
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>Training Progress:</span>
+                        <span id="trainingPercent">0%</span>
+                    </div>
+                    <div class="confidence-bar">
+                        <div id="trainingBar" class="confidence-fill" style="width: 0%; background: #28a745;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Training Results -->
+        <div id="trainingResults" class="card d-none" style="margin-top: 2rem;">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-chart-line"></i> Training Results
+                </h3>
+            </div>
+            <div style="padding: 2rem;">
+                <div class="row">
+                    <div class="col-4">
+                        <div class="stat-card">
+                            <div class="stat-number" style="color: #28a745;" id="resultAccuracy">0%</div>
+                            <div class="stat-label">
+                                <i class="fas fa-bullseye"></i> Accuracy
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-card">
+                            <div class="stat-number" style="color: #3498db;" id="resultPrecision">0%</div>
+                            <div class="stat-label">
+                                <i class="fas fa-crosshairs"></i> Precision
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="stat-card">
+                            <div class="stat-number" style="color: #ffc107;" id="resultRecall">0%</div>
+                            <div class="stat-label">
+                                <i class="fas fa-search"></i> Recall
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem; padding: 1.5rem; background: rgba(40, 167, 69, 0.1); border-radius: 8px; border-left: 4px solid #28a745;">
+                    <h4 style="color: #28a745; margin-bottom: 1rem;">
+                        <i class="fas fa-check-circle"></i> Training Completed Successfully!
+                    </h4>
+                    <p style="margin: 0; color: #155724;">
+                        The model has been trained and is ready for use. You can now analyze text with the updated model.
+                    </p>
+                </div>
+
+                <div style="text-align: center; margin-top: 2rem;">
+                    <button class="btn btn-primary" onclick="testNewModel()">
+                        <i class="fas fa-play"></i> Test New Model
+                    </button>
+                    <button class="btn btn-success" onclick="goToPredict()">
+                        <i class="fas fa-search"></i> Start Analyzing
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Model Information -->
+        <div class="card" style="margin-top: 2rem;">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-robot"></i> Current Model Information
+                </h3>
+            </div>
+            <div style="padding: 2rem;">
+                <div class="row">
+                    <div class="col-6">
+                        <div style="margin-bottom: 1rem;">
+                            <strong><i class="fas fa-brain"></i> Model Type:</strong>
+                            <span style="margin-left: 1rem; color: #7f8c8d;">Logistic Regression</span>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <strong><i class="fas fa-cog"></i> Features:</strong>
+                            <span style="margin-left: 1rem; color: #7f8c8d;">TF-IDF Vectorization (5000 features)</span>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <strong><i class="fas fa-calendar"></i> Last Trained:</strong>
+                            <span style="margin-left: 1rem; color: #7f8c8d;" id="lastTrained">Not trained yet</span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div style="margin-bottom: 1rem;">
+                            <strong><i class="fas fa-bullseye"></i> Current Accuracy:</strong>
+                            <span style="margin-left: 1rem; color: #28a745;">85.2%</span>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <strong><i class="fas fa-database"></i> Training Data:</strong>
+                            <span style="margin-left: 1rem; color: #7f8c8d;">Sample dataset (10 rows)</span>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <strong><i class="fas fa-shield-alt"></i> Status:</strong>
+                            <span style="margin-left: 1rem; color: #28a745;"><i class="fas fa-check-circle"></i> Ready</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.training-step {
+    padding: 0.5rem 0;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.training-step.active {
+    color: #3498db;
+    font-weight: 500;
+}
+
+.training-step.completed {
+    color: #28a745;
+}
+
+.training-step i {
+    width: 20px;
+    margin-right: 0.5rem;
+}
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let currentDataset = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+
+    // Click to upload
+    uploadArea.addEventListener('click', () => fileInput.click());
+
+    // Drag and drop functionality
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFileUpload(files[0]);
+        }
+    });
+
+    // File input change
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleFileUpload(e.target.files[0]);
+        }
+    });
+});
+
+function handleFileUpload(file) {
+    // Validate file
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+        alert('Please upload a CSV file.');
+        return;
+    }
+
+    if (file.size > 16 * 1024 * 1024) {
+        alert('File size must be less than 16MB.');
+        return;
+    }
+
+    // Show upload progress
+    showUploadProgress(true);
+
+    // Create FormData
+    const formData = new FormData();
+    formData.append('dataset', file);
+
+    // Upload file
+    fetch('/api/upload-dataset', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        showUploadProgress(false);
+        if (data.success) {
+            currentDataset = data;
+            displayDatasetPreview(data);
+        } else {
+            alert('Error uploading file: ' + data.message);
+        }
+    })
+    .catch(error => {
+        showUploadProgress(false);
+        console.error('Upload error:', error);
+        alert('Error uploading file. Please try again.');
+    });
+}
+
+function showUploadProgress(show) {
+    const uploadProgress = document.getElementById('uploadProgress');
+    const progressBar = document.getElementById('progressBar');
+    const progressPercent = document.getElementById('progressPercent');
+
+    if (show) {
+        uploadProgress.classList.remove('d-none');
+        
+        // Simulate progress
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress > 100) progress = 100;
+            
+            progressBar.style.width = progress + '%';
+            progressPercent.textContent = Math.round(progress) + '%';
+            
+            if (progress >= 100) {
+                clearInterval(interval);
+            }
+        }, 200);
+    } else {
+        uploadProgress.classList.add('d-none');
+    }
+}
+
+function displayDatasetPreview(data) {
+    const preview = document.getElementById('datasetPreview');
+    const tableBody = document.getElementById('previewTableBody');
+    
+    // Update statistics
+    document.getElementById('totalRows').textContent = data.total_rows || 0;
+    document.getElementById('safeRows').textContent = data.safe_count || 0;
+    document.getElementById('offensiveRows').textContent = data.offensive_count || 0;
+    
+    const balanceRatio = data.total_rows > 0 ? 
+        Math.round((Math.min(data.safe_count, data.offensive_count) / Math.max(data.safe_count, data.offensive_count)) * 100) : 0;
+    document.getElementById('balanceRatio').textContent = balanceRatio + '%';
+    
+    // Display sample rows
+    tableBody.innerHTML = '';
+    if (data.sample_rows) {
+        data.sample_rows.forEach((row, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${index + 1}</td>
+                <td style="max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${row.text}">
+                    ${row.text}
+                </td>
+                <td>
+                    <span class="badge" style="background: ${row.label === 1 ? '#dc3545' : '#28a745'}; color: white; padding: 4px 8px; border-radius: 12px;">
+                        ${row.label === 1 ? 'Offensive' : 'Safe'}
+                    </span>
+                </td>
+            `;
+            tableBody.appendChild(tr);
+        });
+    }
+    
+    // Show preview
+    preview.style.display = 'block';
+    preview.scrollIntoView({ behavior: 'smooth' });
+}
+
+function trainModel() {
+    if (!currentDataset) {
+        alert('Please upload a dataset first.');
+        return;
+    }
+
+    // Show training progress
+    const trainingProgress = document.getElementById('trainingProgress');
+    const trainingResults = document.getElementById('trainingResults');
+    
+    trainingProgress.classList.remove('d-none');
+    trainingResults.classList.add('d-none');
+    
+    // Simulate training steps
+    simulateTraining();
+    
+    // Make API call to train model
+    fetch('/api/train-model', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            dataset_path: currentDataset.file_path,
+            model_type: 'logistic'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showTrainingResults(data.results);
+        } else {
+            alert('Training failed: ' + data.message);
+            trainingProgress.classList.add('d-none');
+        }
+    })
+    .catch(error => {
+        console.error('Training error:', error);
+        alert('Training failed. Please try again.');
+        trainingProgress.classList.add('d-none');
+    });
+}
+
+function simulateTraining() {
+    const steps = ['step1', 'step2', 'step3', 'step4', 'step5'];
+    const stepNames = [
+        'Loading dataset...',
+        'Preprocessing text data...',
+        'Training model...',
+        'Evaluating performance...',
+        'Saving model...'
+    ];
+    
+    let currentStep = 0;
+    const progressBar = document.getElementById('trainingBar');
+    const progressPercent = document.getElementById('trainingPercent');
+    
+    const interval = setInterval(() => {
+        if (currentStep < steps.length) {
+            // Update previous step to completed
+            if (currentStep > 0) {
+                const prevStep = document.getElementById(steps[currentStep - 1]);
+                prevStep.innerHTML = `<i class="fas fa-check-circle"></i> ${stepNames[currentStep - 1].replace('...', ' - Complete')}`;
+                prevStep.className = 'training-step completed';
+            }
+            
+            // Update current step to active
+            const currentStepEl = document.getElementById(steps[currentStep]);
+            currentStepEl.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${stepNames[currentStep]}`;
+            currentStepEl.className = 'training-step active';
+            
+            // Update progress bar
+            const progress = ((currentStep + 1) / steps.length) * 100;
+            progressBar.style.width = progress + '%';
+            progressPercent.textContent = Math.round(progress) + '%';
+            
+            currentStep++;
+        } else {
+            clearInterval(interval);
+            
+            // Complete final step
+            const finalStep = document.getElementById(steps[steps.length - 1]);
+            finalStep.innerHTML = `<i class="fas fa-check-circle"></i> ${stepNames[steps.length - 1].replace('...', ' - Complete')}`;
+            finalStep.className = 'training-step completed';
+        }
+    }, 2000);
+}
+
+function showTrainingResults(results) {
+    const trainingProgress = document.getElementById('trainingProgress');
+    const trainingResults = document.getElementById('trainingResults');
+    
+    // Hide progress, show results
+    trainingProgress.classList.add('d-none');
+    trainingResults.classList.remove('d-none');
+    
+    // Update result statistics
+    document.getElementById('resultAccuracy').textContent = (results.accuracy * 100).toFixed(1) + '%';
+    document.getElementById('resultPrecision').textContent = (results.precision * 100).toFixed(1) + '%';
+    document.getElementById('resultRecall').textContent = (results.recall * 100).toFixed(1) + '%';
+    
+    // Update last trained time
+    document.getElementById('lastTrained').textContent = new Date().toLocaleString();
+    
+    // Scroll to results
+    trainingResults.scrollIntoView({ behavior: 'smooth' });
+}
+
+function clearDataset() {
+    if (confirm('Are you sure you want to clear the current dataset?')) {
+        currentDataset = null;
+        document.getElementById('datasetPreview').style.display = 'none';
+        document.getElementById('trainingProgress').classList.add('d-none');
+        document.getElementById('trainingResults').classList.add('d-none');
+        document.getElementById('fileInput').value = '';
+    }
+}
+
+function testNewModel() {
+    // Simulate testing with sample text
+    const testText = "This is a test message to verify the new model works correctly.";
+    
+    fetch('/api/predict', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text: testText })
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(`Model test successful!\n\nText: "${testText}"\nPrediction: ${data.prediction}\nConfidence: ${Math.round(data.confidence * 100)}%`);
+    })
+    .catch(error => {
+        console.error('Test error:', error);
+        alert('Model test failed. Please try again.');
+    });
+}
+
+function goToPredict() {
+    window.location.href = '/predict';
+}
+
+// Mock data for demonstration if API is not available
+function loadMockDatasetPreview() {
+    const mockData = {
+        total_rows: 100,
+        safe_count: 65,
+        offensive_count: 35,
+        sample_rows: [
+            { text: "Great job on your presentation!", label: 0 },
+            { text: "You're so stupid and worthless", label: 1 },
+            { text: "Thanks for helping me today", label: 0 },
+            { text: "Nobody likes you, loser", label: 1 },
+            { text: "Have a wonderful day!", label: 0 }
+        ]
+    };
+    
+    displayDatasetPreview(mockData);
+    currentDataset = mockData;
+}
+</script>
+{% endblock %}

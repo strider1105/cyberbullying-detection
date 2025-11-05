@@ -1,0 +1,756 @@
+{% extends "base.html" %}
+
+{% block title %}Text Analysis - Cyberbullying Detection System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="prediction-container">
+        <div class="content-wrapper">
+            <div class="text-center mb-4">
+                <h1 style="color: #2c3e50; margin-bottom: 1rem;">
+                    <i class="fas fa-search" style="color: #28a745;"></i>
+                    Text Analysis
+                </h1>
+                <p style="color: #7f8c8d; font-size: 1.1rem;">
+                    Enter text content below to analyze for potential cyberbullying or offensive language
+                </p>
+            </div>
+
+            <!-- Analysis Mode Selection -->
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-header">
+                    <h3 style="margin: 0; color: #2c3e50;">
+                        <i class="fas fa-cogs"></i> Analysis Mode
+                    </h3>
+                </div>
+                <div style="padding: 1.5rem;">
+                    <div class="row">
+                        <div class="col-6">
+                            <button class="btn btn-primary w-100" id="textModeBtn" onclick="switchMode('text')">
+                                <i class="fas fa-keyboard"></i> Text Only
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-warning w-100" id="imageModeBtn" onclick="switchMode('image')">
+                                <i class="fas fa-image"></i> Image + Text
+                            </button>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem; text-align: center; color: #7f8c8d; font-size: 0.9rem;">
+                        <i class="fas fa-info-circle"></i> 
+                        Choose text-only analysis or upload an image (screenshot) with optional additional text
+                    </div>
+                </div>
+            </div>
+
+            <!-- Text-Only Form -->
+            <div class="prediction-form" id="textForm">
+                <form id="predictionForm">
+                    <div class="form-group">
+                        <label for="textInput" class="form-label">
+                            <i class="fas fa-comment-alt"></i> Text to Analyze
+                        </label>
+                        <textarea 
+                            id="textInput" 
+                            name="text" 
+                            class="form-control large" 
+                            placeholder="Enter the text you want to analyze for cyberbullying content..."
+                            rows="6"
+                            required
+                        ></textarea>
+                        <div style="margin-top: 0.5rem; font-size: 0.9rem; color: #7f8c8d;">
+                            <i class="fas fa-info-circle"></i> 
+                            Tip: You can analyze social media posts, comments, messages, or any text content
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6">
+                            <button type="submit" class="btn btn-success w-100" id="analyzeBtn">
+                                <i class="fas fa-play"></i> Analyze Text
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button" class="btn btn-primary w-100" id="clearBtn">
+                                <i class="fas fa-eraser"></i> Clear Text
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Image + Text Form -->
+            <div class="prediction-form d-none" id="imageForm">
+                <form id="imageAnalysisForm" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="imageInput" class="form-label">
+                            <i class="fas fa-image"></i> Upload Image (Screenshot)
+                        </label>
+                        <div class="upload-area" id="imageUploadArea" style="border: 3px dashed #ffc107; background: rgba(255, 193, 7, 0.05);">
+                            <div class="upload-icon" style="color: #ffc107;">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                            <div class="upload-text">
+                                Drag and drop an image here or click to browse
+                            </div>
+                            <div class="upload-subtext">
+                                Supported formats: PNG, JPG, JPEG, GIF, BMP, TIFF (Max: 16MB)
+                            </div>
+                            <input type="file" id="imageInput" name="image" accept="image/*" style="display: none;" required>
+                        </div>
+                        <div id="imagePreview" class="d-none" style="margin-top: 1rem;">
+                            <img id="previewImg" style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 2px solid #ddd;">
+                            <div style="margin-top: 0.5rem;">
+                                <button type="button" class="btn btn-danger" onclick="clearImage()">
+                                    <i class="fas fa-trash"></i> Remove Image
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="additionalText" class="form-label">
+                            <i class="fas fa-plus-circle"></i> Additional Text (Optional)
+                        </label>
+                        <textarea 
+                            id="additionalText" 
+                            name="text" 
+                            class="form-control" 
+                            placeholder="Add any additional context or text that's not in the image..."
+                            rows="3"
+                        ></textarea>
+                        <div style="margin-top: 0.5rem; font-size: 0.9rem; color: #7f8c8d;">
+                            <i class="fas fa-info-circle"></i> 
+                            Text will be extracted from the image automatically (requires Tesseract OCR). If OCR is not available, please manually enter the text you see in the image here.
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6">
+                            <button type="submit" class="btn btn-success w-100" id="analyzeImageBtn">
+                                <i class="fas fa-search-plus"></i> Analyze Image
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button" class="btn btn-primary w-100" onclick="clearImageForm()">
+                                <i class="fas fa-eraser"></i> Clear All
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+                <!-- Sample Texts -->
+                <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #ecf0f1;">
+                    <h4 style="color: #2c3e50; margin-bottom: 1rem;">
+                        <i class="fas fa-lightbulb"></i> Try Sample Texts
+                    </h4>
+                    <div style="margin-bottom: 1rem; text-align: center; color: #7f8c8d; font-size: 0.9rem;">
+                        <i class="fas fa-info-circle"></i> 
+                        <span id="sampleTextMode">Click a button below to load sample text for testing</span>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="card sample-text-card" style="cursor: pointer; transition: all 0.3s ease; border: 2px solid transparent;" onclick="loadSampleText('safe')" onmouseover="this.style.borderColor='#28a745'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='transparent'; this.style.transform='translateY(0)'">
+                                <div style="padding: 1rem; text-align: center;">
+                                    <i class="fas fa-check-circle" style="color: #28a745; font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                                    <h5 style="color: #28a745;">Safe Content</h5>
+                                    <p style="font-size: 0.9rem; color: #7f8c8d;">Click to load a safe text example</p>
+                                    <div style="font-size: 0.8rem; color: #28a745; margin-top: 0.5rem;">
+                                        <i class="fas fa-mouse-pointer"></i> Click me!
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="card sample-text-card" style="cursor: pointer; transition: all 0.3s ease; border: 2px solid transparent;" onclick="loadSampleText('offensive')" onmouseover="this.style.borderColor='#dc3545'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='transparent'; this.style.transform='translateY(0)'">
+                                <div style="padding: 1rem; text-align: center;">
+                                    <i class="fas fa-exclamation-triangle" style="color: #dc3545; font-size: 2rem; margin-bottom: 0.5rem;"></i>
+                                    <h5 style="color: #dc3545;">Offensive Content</h5>
+                                    <p style="font-size: 0.9rem; color: #7f8c8d;">Click to load an offensive text example</p>
+                                    <div style="font-size: 0.8rem; color: #dc3545; margin-top: 0.5rem;">
+                                        <i class="fas fa-mouse-pointer"></i> Click me!
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="d-none" style="text-align: center; margin: 2rem 0;">
+                <div class="spinner"></div>
+                <div class="loading-text">
+                    <i class="fas fa-brain"></i> Analyzing text with AI model...
+                </div>
+            </div>
+
+            <!-- Prediction Results -->
+            <div id="predictionResult" class="prediction-result">
+                <div class="result-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3 style="margin: 0;">
+                        <i class="fas fa-chart-line"></i> Analysis Results
+                    </h3>
+                    <button class="btn btn-primary" onclick="analyzeAnother()">
+                        <i class="fas fa-plus"></i> Analyze Another
+                    </button>
+                </div>
+
+                <div class="row">
+                    <div class="col-8">
+                        <div class="form-group">
+                            <label class="form-label">Original Text</label>
+                            <div id="originalText" style="background: #f8f9fa; padding: 1rem; border-radius: 5px; border-left: 4px solid #3498db;">
+                                <!-- Original text will be displayed here -->
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Prediction</label>
+                            <div id="predictionLabel" class="result-label">
+                                <!-- Prediction result will be displayed here -->
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Confidence Score</label>
+                            <div class="confidence-bar">
+                                <div id="confidenceFill" class="confidence-fill" style="width: 0%;"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.9rem; color: #7f8c8d;">
+                                <span>0%</span>
+                                <span id="confidenceText">0%</span>
+                                <span>100%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-4">
+                        <div class="card" style="text-align: center;">
+                            <div id="resultIcon" style="font-size: 4rem; margin-bottom: 1rem;">
+                                <!-- Result icon will be displayed here -->
+                            </div>
+                            <div id="resultMessage" style="font-size: 1.1rem; font-weight: 500;">
+                                <!-- Result message will be displayed here -->
+                            </div>
+                            <div id="resultDescription" style="margin-top: 1rem; font-size: 0.9rem; color: #7f8c8d;">
+                                <!-- Result description will be displayed here -->
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div style="margin-top: 1rem;">
+                            <button class="btn btn-primary w-100 mb-2" onclick="saveResult()">
+                                <i class="fas fa-save"></i> Save Result
+                            </button>
+                            <button class="btn btn-warning w-100" onclick="reportFalsePositive()">
+                                <i class="fas fa-flag"></i> Report Issue
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #ecf0f1;">
+                    <h4 style="color: #2c3e50; margin-bottom: 1rem;">
+                        <i class="fas fa-info-circle"></i> Understanding the Results
+                    </h4>
+                    <div class="row">
+                        <div class="col-6">
+                            <div style="background: rgba(40, 167, 69, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #28a745;">
+                                <h5 style="color: #28a745; margin-bottom: 0.5rem;">
+                                    <i class="fas fa-check-circle"></i> Safe Content
+                                </h5>
+                                <p style="font-size: 0.9rem; margin: 0; color: #155724;">
+                                    The text appears to be non-offensive and does not contain cyberbullying language.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div style="background: rgba(220, 53, 69, 0.1); padding: 1rem; border-radius: 8px; border-left: 4px solid #dc3545;">
+                                <h5 style="color: #dc3545; margin-bottom: 0.5rem;">
+                                    <i class="fas fa-exclamation-triangle"></i> Offensive Content
+                                </h5>
+                                <p style="font-size: 0.9rem; margin: 0; color: #721c24;">
+                                    The text may contain cyberbullying, harassment, or other offensive language.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Sample texts for demonstration
+const sampleTexts = {
+    safe: [
+        "Great job on your presentation! You did amazing work.",
+        "Thanks for helping me with the project. I really appreciate it.",
+        "Have a wonderful day! Looking forward to working with you.",
+        "Your ideas are really creative and inspiring. Keep it up!",
+        "You're doing fantastic! Keep up the excellent work.",
+        "I appreciate your help today. You're very kind.",
+        "Hope you have a great weekend with your family!",
+        "Congratulations on your achievement! Well deserved.",
+        "You're very talented and I admire your skills.",
+        "Thanks for being such a good friend. You're awesome!"
+    ],
+    offensive: [
+        "You're so stupid and worthless, nobody likes you.",
+        "I hate you so much, you should just disappear.",
+        "You're ugly and pathetic, go kill yourself.",
+        "Nobody cares about you, you're a complete loser.",
+        "You're disgusting and everyone thinks you're a joke.",
+        "Go away, nobody wants you here, you're trash.",
+        "You're absolutely useless and a waste of space.",
+        "I wish you would just die already, loser.",
+        "You're the worst person ever, I hate your face.",
+        "Shut up, you're so annoying and pathetic."
+    ]
+};
+
+let currentMode = 'text';
+
+document.addEventListener('DOMContentLoaded', function() {
+    const textForm = document.getElementById('predictionForm');
+    const imageForm = document.getElementById('imageAnalysisForm');
+    const textInput = document.getElementById('textInput');
+    const imageInput = document.getElementById('imageInput');
+    const imageUploadArea = document.getElementById('imageUploadArea');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const predictionResult = document.getElementById('predictionResult');
+
+    // Text form submission
+    textForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        analyzeText();
+    });
+
+    // Image form submission
+    imageForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        analyzeImage();
+    });
+
+    // Clear button for text
+    clearBtn.addEventListener('click', function() {
+        textInput.value = '';
+        predictionResult.style.display = 'none';
+        textInput.focus();
+    });
+
+    // Auto-resize textarea
+    textInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.max(120, this.scrollHeight) + 'px';
+    });
+
+    // Image upload area click
+    imageUploadArea.addEventListener('click', () => imageInput.click());
+
+    // Image drag and drop
+    imageUploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        imageUploadArea.style.borderColor = '#e0a800';
+        imageUploadArea.style.background = 'rgba(255, 193, 7, 0.1)';
+    });
+
+    imageUploadArea.addEventListener('dragleave', () => {
+        imageUploadArea.style.borderColor = '#ffc107';
+        imageUploadArea.style.background = 'rgba(255, 193, 7, 0.05)';
+    });
+
+    imageUploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        imageUploadArea.style.borderColor = '#ffc107';
+        imageUploadArea.style.background = 'rgba(255, 193, 7, 0.05)';
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleImageSelect(files[0]);
+        }
+    });
+
+    // Image input change
+    imageInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleImageSelect(e.target.files[0]);
+        }
+    });
+});
+
+function loadSampleText(type) {
+    const samples = sampleTexts[type];
+    if (!samples || samples.length === 0) {
+        alert('No sample texts available for this type.');
+        return;
+    }
+    
+    const randomSample = samples[Math.floor(Math.random() * samples.length)];
+    
+    // Load sample text based on current mode
+    if (currentMode === 'text') {
+        // Text-only mode: load into main text input
+        const textInput = document.getElementById('textInput');
+        if (textInput) {
+            textInput.value = randomSample;
+            // Auto-resize textarea
+            textInput.style.height = 'auto';
+            textInput.style.height = Math.max(120, textInput.scrollHeight) + 'px';
+        }
+    } else {
+        // Image mode: load into additional text field
+        const additionalText = document.getElementById('additionalText');
+        if (additionalText) {
+            additionalText.value = randomSample;
+        }
+    }
+    
+    // Hide any previous results
+    const predictionResult = document.getElementById('predictionResult');
+    if (predictionResult) {
+        predictionResult.style.display = 'none';
+    }
+    
+    // Add visual feedback
+    const card = event.currentTarget;
+    if (card) {
+        card.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            card.style.transform = 'scale(1)';
+        }, 150);
+    }
+    
+    // Show success message
+    const typeText = type === 'safe' ? 'Safe' : 'Offensive';
+    console.log(`✅ Loaded ${typeText} sample text: "${randomSample}"`);
+}
+
+function analyzeText() {
+    const textInput = document.getElementById('textInput');
+    const text = textInput.value.trim();
+    
+    if (!text) {
+        alert('Please enter some text to analyze.');
+        return;
+    }
+
+    // Show loading
+    showLoading(true);
+    
+    // Make API call
+    fetch('/api/predict', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: text })
+    })
+    .then(response => response.json())
+    .then(data => {
+        showLoading(false);
+        displayResults(data);
+    })
+    .catch(error => {
+        showLoading(false);
+        console.error('Error:', error);
+        alert('An error occurred while analyzing the text. Please try again.');
+    });
+}
+
+function showLoading(show) {
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const predictionResult = document.getElementById('predictionResult');
+    
+    if (show) {
+        loadingIndicator.classList.remove('d-none');
+        predictionResult.style.display = 'none';
+        analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+        analyzeBtn.disabled = true;
+    } else {
+        loadingIndicator.classList.add('d-none');
+        analyzeBtn.innerHTML = '<i class="fas fa-play"></i> Analyze Text';
+        analyzeBtn.disabled = false;
+    }
+}
+
+function displayResults(data) {
+    const predictionResult = document.getElementById('predictionResult');
+    const originalText = document.getElementById('originalText');
+    const predictionLabel = document.getElementById('predictionLabel');
+    const confidenceFill = document.getElementById('confidenceFill');
+    const confidenceText = document.getElementById('confidenceText');
+    const resultIcon = document.getElementById('resultIcon');
+    const resultMessage = document.getElementById('resultMessage');
+    const resultDescription = document.getElementById('resultDescription');
+    
+    // Display original text
+    originalText.textContent = data.text;
+    
+    // Display prediction
+    const isOffensive = data.label === 1;
+    const confidence = Math.round((data.confidence || 0.5) * 100);
+    
+    predictionLabel.textContent = data.prediction;
+    predictionLabel.className = `result-label ${isOffensive ? 'result-offensive' : 'result-safe'}`;
+    
+    // Update confidence bar
+    confidenceFill.style.width = confidence + '%';
+    confidenceFill.className = `confidence-fill ${isOffensive ? 'confidence-offensive' : 'confidence-safe'}`;
+    confidenceText.textContent = confidence + '%';
+    
+    // Update result card
+    if (isOffensive) {
+        predictionResult.className = 'prediction-result result-offensive';
+        resultIcon.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i>';
+        resultMessage.innerHTML = '<span style="color: #dc3545;">Offensive Content Detected</span>';
+        resultDescription.textContent = 'This text may contain cyberbullying or offensive language. Please review and take appropriate action.';
+    } else {
+        predictionResult.className = 'prediction-result result-safe';
+        resultIcon.innerHTML = '<i class="fas fa-check-circle" style="color: #28a745;"></i>';
+        resultMessage.innerHTML = '<span style="color: #28a745;">Safe Content</span>';
+        resultDescription.textContent = 'This text appears to be safe and does not contain offensive language or cyberbullying content.';
+    }
+    
+    // Show results with animation
+    predictionResult.style.display = 'block';
+    predictionResult.style.opacity = '0';
+    predictionResult.style.transform = 'translateY(20px)';
+    
+    setTimeout(() => {
+        predictionResult.style.transition = 'all 0.5s ease';
+        predictionResult.style.opacity = '1';
+        predictionResult.style.transform = 'translateY(0)';
+    }, 100);
+}
+
+function analyzeAnother() {
+    document.getElementById('textInput').value = '';
+    document.getElementById('predictionResult').style.display = 'none';
+    document.getElementById('textInput').focus();
+}
+
+function saveResult() {
+    // Implement save functionality
+    alert('Result saved! (This would save to your analysis history)');
+}
+
+function reportFalsePositive() {
+    // Implement reporting functionality
+    alert('Thank you for your feedback! This helps improve our model accuracy.');
+}
+
+// Mode switching functions
+function switchMode(mode) {
+    currentMode = mode;
+    const textForm = document.getElementById('textForm');
+    const imageForm = document.getElementById('imageForm');
+    const textModeBtn = document.getElementById('textModeBtn');
+    const imageModeBtn = document.getElementById('imageModeBtn');
+    const predictionResult = document.getElementById('predictionResult');
+    const sampleTextMode = document.getElementById('sampleTextMode');
+
+    if (mode === 'text') {
+        textForm.classList.remove('d-none');
+        imageForm.classList.add('d-none');
+        textModeBtn.classList.remove('btn-primary');
+        textModeBtn.classList.add('btn-success');
+        imageModeBtn.classList.remove('btn-warning');
+        imageModeBtn.classList.add('btn-primary');
+        
+        // Update sample text instructions
+        if (sampleTextMode) {
+            sampleTextMode.textContent = 'Sample text will be loaded into the main text area above';
+        }
+    } else {
+        textForm.classList.add('d-none');
+        imageForm.classList.remove('d-none');
+        textModeBtn.classList.remove('btn-success');
+        textModeBtn.classList.add('btn-primary');
+        imageModeBtn.classList.remove('btn-primary');
+        imageModeBtn.classList.add('btn-warning');
+        
+        // Update sample text instructions
+        if (sampleTextMode) {
+            sampleTextMode.textContent = 'Sample text will be loaded into the additional text field above';
+        }
+    }
+    
+    // Hide previous results
+    if (predictionResult) {
+        predictionResult.style.display = 'none';
+    }
+}
+
+// Image handling functions
+function handleImageSelect(file) {
+    // Validate file type
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/bmp', 'image/tiff'];
+    if (!allowedTypes.includes(file.type)) {
+        alert('Please select a valid image file (PNG, JPG, JPEG, GIF, BMP, TIFF)');
+        return;
+    }
+
+    // Validate file size (16MB)
+    if (file.size > 16 * 1024 * 1024) {
+        alert('File size must be less than 16MB');
+        return;
+    }
+
+    // Show image preview
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const previewImg = document.getElementById('previewImg');
+        const imagePreview = document.getElementById('imagePreview');
+        const imageUploadArea = document.getElementById('imageUploadArea');
+        
+        previewImg.src = e.target.result;
+        imagePreview.classList.remove('d-none');
+        imageUploadArea.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+
+    // Update the file input
+    const imageInput = document.getElementById('imageInput');
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    imageInput.files = dt.files;
+}
+
+function clearImage() {
+    const imageInput = document.getElementById('imageInput');
+    const imagePreview = document.getElementById('imagePreview');
+    const imageUploadArea = document.getElementById('imageUploadArea');
+    
+    imageInput.value = '';
+    imagePreview.classList.add('d-none');
+    imageUploadArea.style.display = 'block';
+}
+
+function clearImageForm() {
+    clearImage();
+    document.getElementById('additionalText').value = '';
+    document.getElementById('predictionResult').style.display = 'none';
+}
+
+// Image analysis function
+function analyzeImage() {
+    const imageInput = document.getElementById('imageInput');
+    const additionalText = document.getElementById('additionalText').value;
+    
+    if (!imageInput.files || imageInput.files.length === 0) {
+        alert('Please select an image to analyze.');
+        return;
+    }
+
+    // Show loading
+    showLoading(true);
+    
+    // Create FormData
+    const formData = new FormData();
+    formData.append('image', imageInput.files[0]);
+    formData.append('text', additionalText);
+
+    // Make API call
+    fetch('/api/predict-image', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        showLoading(false);
+        if (data.error) {
+            alert('Error: ' + data.error);
+        } else {
+            displayImageResults(data);
+        }
+    })
+    .catch(error => {
+        showLoading(false);
+        console.error('Error:', error);
+        alert('An error occurred while analyzing the image. Please try again.');
+    });
+}
+
+function displayImageResults(data) {
+    const predictionResult = document.getElementById('predictionResult');
+    const originalText = document.getElementById('originalText');
+    const predictionLabel = document.getElementById('predictionLabel');
+    const confidenceFill = document.getElementById('confidenceFill');
+    const confidenceText = document.getElementById('confidenceText');
+    const resultIcon = document.getElementById('resultIcon');
+    const resultMessage = document.getElementById('resultMessage');
+    const resultDescription = document.getElementById('resultDescription');
+    
+    // Display combined text (extracted + additional)
+    let displayText = '';
+    if (data.extracted_text && data.additional_text) {
+        displayText = `Extracted from image: "${data.extracted_text}"\n\nAdditional text: "${data.additional_text}"`;
+    } else if (data.extracted_text) {
+        displayText = `Extracted from image: "${data.extracted_text}"`;
+    } else if (data.additional_text) {
+        displayText = `Additional text: "${data.additional_text}"`;
+    } else {
+        displayText = 'No text found in image';
+    }
+    
+    originalText.textContent = displayText;
+    
+    // Handle special cases
+    if (data.label === -1) {
+        predictionLabel.textContent = data.prediction;
+        predictionLabel.className = 'result-label';
+        confidenceFill.style.width = '0%';
+        confidenceText.textContent = '0%';
+        resultIcon.innerHTML = '<i class="fas fa-exclamation-circle" style="color: #ffc107;"></i>';
+        resultMessage.innerHTML = '<span style="color: #ffc107;">No Text Found</span>';
+        resultDescription.textContent = 'Could not extract readable text from the image. Try a clearer image or add text manually.';
+        predictionResult.className = 'prediction-result';
+    } else {
+        // Normal prediction results
+        const isOffensive = data.label === 1;
+        const confidence = Math.round((data.confidence || 0.5) * 100);
+        
+        predictionLabel.textContent = data.prediction;
+        predictionLabel.className = `result-label ${isOffensive ? 'result-offensive' : 'result-safe'}`;
+        
+        // Update confidence bar
+        confidenceFill.style.width = confidence + '%';
+        confidenceFill.className = `confidence-fill ${isOffensive ? 'confidence-offensive' : 'confidence-safe'}`;
+        confidenceText.textContent = confidence + '%';
+        
+        // Update result card
+        if (isOffensive) {
+            predictionResult.className = 'prediction-result result-offensive';
+            resultIcon.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i>';
+            resultMessage.innerHTML = '<span style="color: #dc3545;">Offensive Content Detected</span>';
+            resultDescription.textContent = 'The image contains text that may be cyberbullying or offensive. Please review and take appropriate action.';
+        } else {
+            predictionResult.className = 'prediction-result result-safe';
+            resultIcon.innerHTML = '<i class="fas fa-check-circle" style="color: #28a745;"></i>';
+            resultMessage.innerHTML = '<span style="color: #28a745;">Safe Content</span>';
+            resultDescription.textContent = 'The image appears to contain safe content without offensive language or cyberbullying.';
+        }
+    }
+    
+    // Show results with animation
+    predictionResult.style.display = 'block';
+    predictionResult.style.opacity = '0';
+    predictionResult.style.transform = 'translateY(20px)';
+    
+    setTimeout(() => {
+        predictionResult.style.transition = 'all 0.5s ease';
+        predictionResult.style.opacity = '1';
+        predictionResult.style.transform = 'translateY(0)';
+    }, 100);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Login - Cyberbullying Detection System{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <div style="font-size: 4rem; color: #3498db; margin-bottom: 1rem;">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h1 class="login-title">CyberGuard</h1>
+            <p class="login-subtitle">Cyberbullying Detection System</p>
+            <p style="color: #7f8c8d; font-size: 0.9rem; margin-top: 1rem;">
+                Protecting digital spaces through AI-powered content analysis
+            </p>
+        </div>
+
+        <form method="POST" action="{{ url_for('login') }}" id="loginForm">
+            <div class="form-group">
+                <label for="username" class="form-label">
+                    <i class="fas fa-user"></i> Username
+                </label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    class="form-control" 
+                    placeholder="Enter your username"
+                    required
+                    autocomplete="username"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="password" class="form-label">
+                    <i class="fas fa-lock"></i> Password
+                </label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    class="form-control" 
+                    placeholder="Enter your password"
+                    required
+                    autocomplete="current-password"
+                >
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+            </div>
+        </form>
+
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #ecf0f1;">
+            <h4 style="color: #2c3e50; margin-bottom: 1rem; text-align: center;">Demo Credentials</h4>
+            <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; font-size: 0.9rem;">
+                <div style="margin-bottom: 0.5rem;">
+                    <strong>Admin:</strong> username: <code>admin</code>, password: <code>password123</code>
+                </div>
+                <div>
+                    <strong>User:</strong> username: <code>user</code>, password: <code>demo123</code>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem; text-align: center; color: #7f8c8d; font-size: 0.85rem;">
+            <p><i class="fas fa-info-circle"></i> This system helps identify and prevent cyberbullying</p>
+            <p>by analyzing text content using machine learning algorithms.</p>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Additional login-specific styles */
+.login-container {
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(155, 89, 182, 0.1));
+}
+
+.login-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.login-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(52, 152, 219, 0.05), transparent);
+    animation: shimmer 3s infinite;
+    pointer-events: none;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+.form-control:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+code {
+    background: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    color: #495057;
+}
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('loginForm');
+    const submitBtn = form.querySelector('button[type="submit"]');
+    
+    form.addEventListener('submit', function(e) {
+        // Add loading state
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing In...';
+        submitBtn.disabled = true;
+        
+        // Re-enable after 3 seconds in case of error
+        setTimeout(() => {
+            submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+            submitBtn.disabled = false;
+        }, 3000);
+    });
+    
+    // Add enter key support
+    document.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            form.submit();
+        }
+    });
+});
+</script>
+{% endblock %}

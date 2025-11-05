@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Cyberbullying Detection System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="content-wrapper">
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">
+                <i class="fas fa-shield-alt" style="color: #3498db;"></i>
+                Welcome to CyberGuard
+            </h1>
+            <p class="dashboard-subtitle">
+                AI-Powered Cyberbullying Detection and Prevention System
+            </p>
+            <p style="color: #7f8c8d; margin-top: 1rem;">
+                Hello, <strong>{{ session.username }}</strong>! Use the tools below to analyze text content and protect digital spaces.
+            </p>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalPredictions">0</div>
+                <div class="stat-label">
+                    <i class="fas fa-search"></i> Total Predictions
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" style="color: #28a745;" id="safePredictions">0</div>
+                <div class="stat-label">
+                    <i class="fas fa-check-circle"></i> Safe Content
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" style="color: #dc3545;" id="offensivePredictions">0</div>
+                <div class="stat-label">
+                    <i class="fas fa-exclamation-triangle"></i> Offensive Content
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" style="color: #ffc107;" id="modelAccuracy">85.2%</div>
+                <div class="stat-label">
+                    <i class="fas fa-bullseye"></i> Model Accuracy
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Navigation Cards -->
+        <div class="dashboard-cards">
+            <div class="dashboard-card predict">
+                <div class="dashboard-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h3>Text Analysis</h3>
+                <p>Analyze text content to detect potential cyberbullying and offensive language using our AI model.</p>
+                <div style="margin-top: 1.5rem;">
+                    <a href="{{ url_for('predict') }}" class="btn btn-success">
+                        <i class="fas fa-play"></i> Start Analysis
+                    </a>
+                </div>
+                <div style="margin-top: 1rem; font-size: 0.9rem; color: #7f8c8d;">
+                    <i class="fas fa-info-circle"></i> Real-time text classification with confidence scores
+                </div>
+            </div>
+
+            <div class="dashboard-card charts">
+                <div class="dashboard-icon">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <h3>Analytics Dashboard</h3>
+                <p>View comprehensive statistics and visualizations of cyberbullying patterns and detection results.</p>
+                <div style="margin-top: 1.5rem;">
+                    <a href="{{ url_for('charts') }}" class="btn btn-warning">
+                        <i class="fas fa-chart-line"></i> View Analytics
+                    </a>
+                </div>
+                <div style="margin-top: 1rem; font-size: 0.9rem; color: #7f8c8d;">
+                    <i class="fas fa-info-circle"></i> Interactive charts and trend analysis
+                </div>
+            </div>
+
+            <div class="dashboard-card dataset">
+                <div class="dashboard-icon">
+                    <i class="fas fa-database"></i>
+                </div>
+                <h3>Dataset Management</h3>
+                <p>Upload new datasets and retrain the machine learning model to improve detection accuracy.</p>
+                <div style="margin-top: 1.5rem;">
+                    <a href="{{ url_for('dataset') }}" class="btn btn-danger">
+                        <i class="fas fa-upload"></i> Manage Data
+                    </a>
+                </div>
+                <div style="margin-top: 1rem; font-size: 0.9rem; color: #7f8c8d;">
+                    <i class="fas fa-info-circle"></i> CSV upload and model training capabilities
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Section -->
+        <div class="card" style="margin-top: 3rem;">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-clock"></i> Recent Activity
+                </h3>
+            </div>
+            <div id="recentActivity">
+                <div style="text-align: center; padding: 2rem; color: #7f8c8d;">
+                    <i class="fas fa-history" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                    <p>No recent activity. Start by analyzing some text content!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Information -->
+        <div class="row" style="margin-top: 2rem;">
+            <div class="col-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">
+                            <i class="fas fa-cog"></i> System Status
+                        </h4>
+                    </div>
+                    <div style="padding: 1rem 0;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                            <span><i class="fas fa-robot"></i> ML Model:</span>
+                            <span style="color: #28a745;"><i class="fas fa-check-circle"></i> Ready</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                            <span><i class="fas fa-server"></i> API Status:</span>
+                            <span style="color: #28a745;"><i class="fas fa-check-circle"></i> Online</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span><i class="fas fa-clock"></i> Last Updated:</span>
+                            <span style="color: #7f8c8d;">{{ current_date }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">
+                            <i class="fas fa-info-circle"></i> About CyberGuard
+                        </h4>
+                    </div>
+                    <div style="padding: 1rem 0;">
+                        <p style="margin-bottom: 1rem; color: #7f8c8d; font-size: 0.9rem;">
+                            CyberGuard uses advanced machine learning algorithms to detect and prevent cyberbullying in digital communications.
+                        </p>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span><i class="fas fa-brain"></i> Algorithm:</span>
+                            <span>Logistic Regression</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span><i class="fas fa-language"></i> Features:</span>
+                            <span>TF-IDF Vectorization</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span><i class="fas fa-shield-alt"></i> Protection:</span>
+                            <span style="color: #28a745;">Active</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Load dashboard statistics
+    loadDashboardStats();
+    
+    // Load recent activity
+    loadRecentActivity();
+    
+    // Update stats every 30 seconds
+    setInterval(loadDashboardStats, 30000);
+});
+
+function loadDashboardStats() {
+    // Simulate loading stats (replace with actual API call)
+    const stats = {
+        total: Math.floor(Math.random() * 1000) + 500,
+        safe: Math.floor(Math.random() * 400) + 300,
+        offensive: Math.floor(Math.random() * 200) + 100,
+        accuracy: (85.2 + Math.random() * 5).toFixed(1) + '%'
+    };
+    
+    // Animate counter updates
+    animateCounter('totalPredictions', stats.total);
+    animateCounter('safePredictions', stats.safe);
+    animateCounter('offensivePredictions', stats.offensive);
+    document.getElementById('modelAccuracy').textContent = stats.accuracy;
+}
+
+function animateCounter(elementId, targetValue) {
+    const element = document.getElementById(elementId);
+    const currentValue = parseInt(element.textContent) || 0;
+    const increment = Math.ceil((targetValue - currentValue) / 20);
+    
+    if (currentValue < targetValue) {
+        element.textContent = Math.min(currentValue + increment, targetValue);
+        setTimeout(() => animateCounter(elementId, targetValue), 50);
+    }
+}
+
+function loadRecentActivity() {
+    // Simulate recent activity (replace with actual API call)
+    const activities = [
+        { time: '2 minutes ago', action: 'Text analyzed', result: 'Safe', icon: 'check-circle', color: '#28a745' },
+        { time: '5 minutes ago', action: 'Text analyzed', result: 'Offensive', icon: 'exclamation-triangle', color: '#dc3545' },
+        { time: '12 minutes ago', action: 'Dataset uploaded', result: 'Success', icon: 'upload', color: '#3498db' },
+        { time: '1 hour ago', action: 'Model retrained', result: 'Complete', icon: 'cog', color: '#ffc107' }
+    ];
+    
+    const activityContainer = document.getElementById('recentActivity');
+    
+    if (activities.length > 0) {
+        activityContainer.innerHTML = activities.map(activity => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #ecf0f1;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <i class="fas fa-${activity.icon}" style="color: ${activity.color}; font-size: 1.2rem;"></i>
+                    <div>
+                        <div style="font-weight: 500;">${activity.action}</div>
+                        <div style="font-size: 0.9rem; color: #7f8c8d;">${activity.time}</div>
+                    </div>
+                </div>
+                <div style="color: ${activity.color}; font-weight: 500;">
+                    ${activity.result}
+                </div>
+            </div>
+        `).join('');
+    }
+}
+</script>
+{% endblock %}

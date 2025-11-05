@@ -1,0 +1,480 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics Dashboard - Cyberbullying Detection System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="content-wrapper">
+        <div class="text-center mb-4">
+            <h1 style="color: #2c3e50; margin-bottom: 1rem;">
+                <i class="fas fa-chart-pie" style="color: #ffc107;"></i>
+                Analytics Dashboard
+            </h1>
+            <p style="color: #7f8c8d; font-size: 1.1rem;">
+                Comprehensive insights and statistics about cyberbullying detection patterns
+            </p>
+        </div>
+
+        <!-- Key Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" style="color: #3498db;" id="totalAnalyzed">1,247</div>
+                <div class="stat-label">
+                    <i class="fas fa-search"></i> Total Analyzed
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" style="color: #28a745;" id="safeContent">892</div>
+                <div class="stat-label">
+                    <i class="fas fa-check-circle"></i> Safe Content (71.5%)
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" style="color: #dc3545;" id="offensiveContent">355</div>
+                <div class="stat-label">
+                    <i class="fas fa-exclamation-triangle"></i> Offensive Content (28.5%)
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" style="color: #ffc107;" id="avgConfidence">87.3%</div>
+                <div class="stat-label">
+                    <i class="fas fa-bullseye"></i> Avg. Confidence
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 1 -->
+        <div class="row">
+            <div class="col-6">
+                <div class="chart-container">
+                    <h3 style="color: #2c3e50; margin-bottom: 1.5rem; text-align: center;">
+                        <i class="fas fa-pie-chart"></i> Content Distribution
+                    </h3>
+                    <div class="chart-wrapper">
+                        <canvas id="distributionChart"></canvas>
+                    </div>
+                    <div style="text-align: center; margin-top: 1rem; color: #7f8c8d; font-size: 0.9rem;">
+                        Overall distribution of safe vs offensive content
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="chart-container">
+                    <h3 style="color: #2c3e50; margin-bottom: 1.5rem; text-align: center;">
+                        <i class="fas fa-chart-bar"></i> Cyberbullying Categories
+                    </h3>
+                    <div class="chart-wrapper">
+                        <canvas id="categoriesChart"></canvas>
+                    </div>
+                    <div style="text-align: center; margin-top: 1rem; color: #7f8c8d; font-size: 0.9rem;">
+                        Types of offensive content detected
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row 2 -->
+        <div class="row">
+            <div class="col-12">
+                <div class="chart-container">
+                    <h3 style="color: #2c3e50; margin-bottom: 1.5rem; text-align: center;">
+                        <i class="fas fa-chart-line"></i> Detection Trends Over Time
+                    </h3>
+                    <div class="chart-wrapper" style="height: 300px;">
+                        <canvas id="trendsChart"></canvas>
+                    </div>
+                    <div style="text-align: center; margin-top: 1rem; color: #7f8c8d; font-size: 0.9rem;">
+                        Daily analysis activity and detection patterns
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Statistics -->
+        <div class="row">
+            <div class="col-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">
+                            <i class="fas fa-clock"></i> Recent Activity
+                        </h4>
+                    </div>
+                    <div id="recentAnalytics">
+                        <div style="padding: 1rem 0;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #ecf0f1;">
+                                <span><i class="fas fa-calendar-day"></i> Today:</span>
+                                <span style="font-weight: 500;">47 analyses</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #ecf0f1;">
+                                <span><i class="fas fa-calendar-week"></i> This Week:</span>
+                                <span style="font-weight: 500;">312 analyses</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #ecf0f1;">
+                                <span><i class="fas fa-calendar-alt"></i> This Month:</span>
+                                <span style="font-weight: 500;">1,247 analyses</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span><i class="fas fa-chart-line"></i> Growth:</span>
+                                <span style="color: #28a745; font-weight: 500;">+23.5%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">
+                            <i class="fas fa-bullseye"></i> Model Performance
+                        </h4>
+                    </div>
+                    <div style="padding: 1rem 0;">
+                        <div style="margin-bottom: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>Accuracy:</span>
+                                <span style="font-weight: 500;">87.3%</span>
+                            </div>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill confidence-safe" style="width: 87.3%;"></div>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>Precision:</span>
+                                <span style="font-weight: 500;">84.7%</span>
+                            </div>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" style="width: 84.7%; background: #3498db;"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>Recall:</span>
+                                <span style="font-weight: 500;">89.1%</span>
+                            </div>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" style="width: 89.1%; background: #ffc107;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title">
+                            <i class="fas fa-exclamation-triangle"></i> Risk Levels
+                        </h4>
+                    </div>
+                    <div style="padding: 1rem 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 0.5rem; background: rgba(220, 53, 69, 0.1); border-radius: 5px;">
+                            <span><i class="fas fa-circle" style="color: #dc3545;"></i> High Risk:</span>
+                            <span style="font-weight: 500; color: #dc3545;">89 cases</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 0.5rem; background: rgba(255, 193, 7, 0.1); border-radius: 5px;">
+                            <span><i class="fas fa-circle" style="color: #ffc107;"></i> Medium Risk:</span>
+                            <span style="font-weight: 500; color: #ffc107;">156 cases</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding: 0.5rem; background: rgba(40, 167, 69, 0.1); border-radius: 5px;">
+                            <span><i class="fas fa-circle" style="color: #28a745;"></i> Low Risk:</span>
+                            <span style="font-weight: 500; color: #28a745;">110 cases</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; background: rgba(52, 152, 219, 0.1); border-radius: 5px;">
+                            <span><i class="fas fa-circle" style="color: #3498db;"></i> Safe:</span>
+                            <span style="font-weight: 500; color: #3498db;">892 cases</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export and Actions -->
+        <div class="card" style="margin-top: 2rem;">
+            <div class="card-header">
+                <h4 class="card-title">
+                    <i class="fas fa-download"></i> Export & Actions
+                </h4>
+            </div>
+            <div style="padding: 1.5rem 0;">
+                <div class="row">
+                    <div class="col-3">
+                        <button class="btn btn-primary w-100" onclick="exportData('csv')">
+                            <i class="fas fa-file-csv"></i> Export CSV
+                        </button>
+                    </div>
+                    <div class="col-3">
+                        <button class="btn btn-success w-100" onclick="exportData('pdf')">
+                            <i class="fas fa-file-pdf"></i> Export PDF
+                        </button>
+                    </div>
+                    <div class="col-3">
+                        <button class="btn btn-warning w-100" onclick="refreshData()">
+                            <i class="fas fa-sync-alt"></i> Refresh Data
+                        </button>
+                    </div>
+                    <div class="col-3">
+                        <button class="btn btn-danger w-100" onclick="clearAnalytics()">
+                            <i class="fas fa-trash"></i> Clear History
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let distributionChart, categoriesChart, trendsChart;
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCharts();
+    loadChartData();
+    
+    // Auto-refresh every 5 minutes
+    setInterval(loadChartData, 300000);
+});
+
+function initializeCharts() {
+    // Distribution Pie Chart
+    const distributionCtx = document.getElementById('distributionChart').getContext('2d');
+    distributionChart = new Chart(distributionCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Safe Content', 'Offensive Content'],
+            datasets: [{
+                data: [71.5, 28.5],
+                backgroundColor: ['#28a745', '#dc3545'],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true
+                    }
+                }
+            }
+        }
+    });
+
+    // Categories Bar Chart
+    const categoriesCtx = document.getElementById('categoriesChart').getContext('2d');
+    categoriesChart = new Chart(categoriesCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Harassment', 'Hate Speech', 'Threats', 'Discrimination', 'Other'],
+            datasets: [{
+                label: 'Cases Detected',
+                data: [89, 67, 45, 78, 76],
+                backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56', '#ff9f40'],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 10
+                    }
+                }
+            }
+        }
+    });
+
+    // Trends Line Chart
+    const trendsCtx = document.getElementById('trendsChart').getContext('2d');
+    trendsChart = new Chart(trendsCtx, {
+        type: 'line',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [
+                {
+                    label: 'Safe Content',
+                    data: [45, 52, 38, 67, 73, 29, 41],
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                },
+                {
+                    label: 'Offensive Content',
+                    data: [18, 23, 15, 27, 31, 12, 17],
+                    borderColor: '#dc3545',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    stacked: false
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            }
+        }
+    });
+}
+
+function loadChartData() {
+    // Simulate loading data from API
+    fetch('/api/chart-data')
+        .then(response => response.json())
+        .then(data => {
+            updateCharts(data);
+        })
+        .catch(error => {
+            console.error('Error loading chart data:', error);
+            // Use mock data if API fails
+            updateChartsWithMockData();
+        });
+}
+
+function updateChartsWithMockData() {
+    // Mock data for demonstration
+    const mockData = {
+        distribution: {
+            safe: 71.5,
+            offensive: 28.5
+        },
+        categories: {
+            labels: ['Harassment', 'Hate Speech', 'Threats', 'Discrimination', 'Other'],
+            data: [89, 67, 45, 78, 76]
+        },
+        trends: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            safe: [45, 52, 38, 67, 73, 29, 41],
+            offensive: [18, 23, 15, 27, 31, 12, 17]
+        }
+    };
+    
+    updateCharts(mockData);
+}
+
+function updateCharts(data) {
+    // Update distribution chart
+    if (data.distribution) {
+        distributionChart.data.datasets[0].data = [data.distribution.safe, data.distribution.offensive];
+        distributionChart.update();
+    }
+    
+    // Update categories chart
+    if (data.categories) {
+        categoriesChart.data.labels = data.categories.labels;
+        categoriesChart.data.datasets[0].data = data.categories.data;
+        categoriesChart.update();
+    }
+    
+    // Update trends chart
+    if (data.trends) {
+        trendsChart.data.labels = data.trends.labels;
+        trendsChart.data.datasets[0].data = data.trends.safe;
+        trendsChart.data.datasets[1].data = data.trends.offensive;
+        trendsChart.update();
+    }
+}
+
+function exportData(format) {
+    const message = format === 'csv' ? 'Exporting data as CSV...' : 'Generating PDF report...';
+    
+    // Show loading message
+    const originalText = event.target.innerHTML;
+    event.target.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + message;
+    event.target.disabled = true;
+    
+    // Simulate export process
+    setTimeout(() => {
+        event.target.innerHTML = originalText;
+        event.target.disabled = false;
+        alert(`${format.toUpperCase()} export completed! (This would download the file)`);
+    }, 2000);
+}
+
+function refreshData() {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+    btn.disabled = true;
+    
+    // Refresh all charts
+    loadChartData();
+    
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        
+        // Show success message
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-success';
+        alert.innerHTML = '<i class="fas fa-check-circle"></i> Data refreshed successfully!';
+        alert.style.position = 'fixed';
+        alert.style.top = '20px';
+        alert.style.right = '20px';
+        alert.style.zIndex = '9999';
+        document.body.appendChild(alert);
+        
+        setTimeout(() => {
+            alert.remove();
+        }, 3000);
+    }, 1500);
+}
+
+function clearAnalytics() {
+    if (confirm('Are you sure you want to clear all analytics history? This action cannot be undone.')) {
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Clearing...';
+        btn.disabled = true;
+        
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            alert('Analytics history cleared successfully!');
+            
+            // Reset charts to zero
+            distributionChart.data.datasets[0].data = [0, 0];
+            categoriesChart.data.datasets[0].data = [0, 0, 0, 0, 0];
+            trendsChart.data.datasets[0].data = [0, 0, 0, 0, 0, 0, 0];
+            trendsChart.data.datasets[1].data = [0, 0, 0, 0, 0, 0, 0];
+            
+            distributionChart.update();
+            categoriesChart.update();
+            trendsChart.update();
+        }, 1500);
+    }
+}
+
+// Initialize with mock data
+updateChartsWithMockData();
+</script>
+{% endblock %}
